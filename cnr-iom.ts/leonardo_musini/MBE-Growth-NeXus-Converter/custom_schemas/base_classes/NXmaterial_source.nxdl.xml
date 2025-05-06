@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="nxdlformat.xsl" ?>
+
+<definition xmlns="http://definition.nexusformat.org/nxdl/3.1" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://definition.nexusformat.org/nxdl/3.1 ../nxdl.xsd"
+    category="base"
+	name="NXmaterial_source" 
+	type="group" 
+    extends="NXobject">
+    <doc>
+        Base class defining a generic material source device used in a synthesis or deposition apparatus. 
+		It captures key metadata including the device name, model, source type, shutter status, 
+		and partial contributions to the growth process, such as growth rate and pressure. 
+		This class supports documentation of diverse material delivery systems in experimental setups.
+    </doc>
+
+	<field name="name" type="NX_CHAR">
+		<doc>
+            Name for the material source device
+        </doc>
+	</field>
+	<field name="model" type="NX_CHAR">
+		<doc>
+            Material source device identification code/model number
+        </doc>
+	</field>
+    <field name="type" type="NX_CHAR">
+        <doc>
+            Type of material source device used for deposition.
+        </doc>
+		<enumeration>
+			<item value="effusion_cell" />
+			<item value="cracker_cell" />
+			<item value="filament" />
+		</enumeration>
+	</field>
+    <field name="shutter_status" type="NX_CHAR">
+        <doc>
+            Operational state of the shutter.
+        </doc>
+		<enumeration>
+			<item value="open" />
+			<item value="closed" />
+		</enumeration>
+	</field>
+    <field name="partial_growth_rate" type="NX_FLOAT" unit="NX_FREQUENCY">
+		<doc>
+			Contribution of this material source to the overall growth rate, expressed in units of frequency (e.g., nm/s, Å/s).
+		</doc>
+	</field>
+    <field name="partial_pressure" type="NX_FLOAT" unit="NX_PRESSURE">
+		<doc>
+			Partial pressure associated with this material source during the deposition process.
+		</doc>
+	</field>
+
+</definition>

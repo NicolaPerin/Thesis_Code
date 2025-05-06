@@ -1,0 +1,14 @@
+[
+    {
+        "identifier": "IMM-PARENT-001",
+        "name": "Parent",
+        "date": "2025-04-30",
+        "atom_types": "H, C, O",
+        "description": "Powder parent sample",
+        "origin": "Lab",
+        "analysis_type": "Characterization",
+        "preparation": "Lab",
+        "state": "solid",
+        "notes": null
+    }
+]

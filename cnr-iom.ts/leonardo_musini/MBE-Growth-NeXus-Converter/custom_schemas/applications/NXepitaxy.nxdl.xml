@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="nxdlformat.xsl"?>
+
+<definition xmlns="http://definition.nexusformat.org/nxdl/3.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://definition.nexusformat.org/nxdl/3.1 ../nxdl.xsd"
+    category="application" 
+    name="NXepitaxy"  
+    type="group"
+    extends="NXobject">
+    <doc>
+        This application definition, NXepitaxy, provides a standardized schema 
+        for recording epitaxial deposition processes. It captures detailed information 
+        about the sample structure, growth parameters, instrument configuration, 
+        and user metadata. The schema is intended to support a wide range of epitaxy techniques,
+        though specific implementations are yet to be formally defined. 
+        URI: http://purl.obolibrary.org/obo/CHMO_0001336
+    </doc>
+
+    <group name="entry" type="NXentry" minOccurs="1">
+        <field name="definition" type="NX_CHAR" minOccurs="1">
+            <doc>
+                Official NeXus NXDL schema to which this entry conforms which must be
+			    the name of the NXDL file (case sensitive without the file extension)
+			    that the NXDL schema is defined in. 
+            </doc>
+        </field>
+        <field name="title" type="NX_CHAR" minOccurs="1">
+            <doc>
+                Extended title for entry.
+            </doc>
+        </field>
+        <field name="experiment_description" type="NX_CHAR" minOccurs="1">
+            <doc>
+                Brief summary of the deposition process.
+            </doc>
+        </field>
+        <field name="start_time" type="NX_DATE_TIME" minOccurs="1">
+            <doc>
+                Starting time of deposition.
+            </doc>
+        </field>
+        <field name="end_time" type="NX_DATE_TIME" minOccurs="1">
+            <doc>
+                Ending time of deposition.
+            </doc>
+        </field>
+        <field name="duration" type="NX_FLOAT" unit="NX_TIME" minOccurs="1">
+            <doc>
+                Total duraton of deposition.
+            </doc>
+        </field>
+
+        <group name="user" type="NXuser" minOccurs="1" maxOccurs="unbounded">
+            <field name="name" type="NX_CHAR" minOccurs="1">
+                <doc>
+                    Full name of the researcher user responsible for the deposition.
+                </doc>
+            </field>
+            <field name="affiliation" type="NX_CHAR" minOccurs="1">
+                <doc>
+                    Affiliation of user.
+                </doc>
+            </field>
+            <field name="role" type="NX_CHAR" minOccurs="0" recommended="true">
+                <doc>
+                    Role of user.
+                </doc>
+            </field>
+            <field name="email" type="NX_CHAR" minOccurs="0" recommended="true">
+                <doc>
+                    Email of user.
+                </doc>
+            </field>
+            <field name="ORCID" type="NX_CHAR" minOccurs="1">
+                <doc>
+                    Open Researcher and Contributor ID,
+                    defined by https://orcid.org and expressed as a URI.
+                </doc>
+            </field>
+        </group>
+
+        <group name="sample" type="NXsample" minOccurs="1">
+            <field name="name" type="NX_CHAR" minOccurs="1">
+                <doc>
+                    Descriptive name of sample.
+                </doc>
+            </field>
+            <field name="thickness" type="NX_FLOAT" unit="NX_LENGTH" minOccurs="1">
+                <doc>
+                    Total thickness of the sample.
+                </doc>
+            </field>
+
+            <group name="substrate" type="NXsample_component" minOccurs="1">
+                <field name="name" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Descriptive name of the substrate.
+                    </doc>
+                </field>
+                <field name="chemical_formula" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Chemical composition formula of the substrate.
+                    </doc>
+                </field>
+                <field name="thickness" type="NX_FLOAT" unit="NX_LENGTH" minOccurs="1">
+                    <doc>
+                        Thickness of the substrate.
+                    </doc>
+                </field>
+                <field name="area" type="NX_FLOAT" unit="NX_AREA" minOccurs="1">
+                    <doc>
+                        Surface area of the substrate.
+                    </doc>
+                </field>
+                <field name="diameter" type="NX_FLOAT" unit="NX_LENGTH" minOccurs="0">
+                    <doc>
+                        Diameter of the wafer.
+                    </doc>
+                </field>
+                <field name="crystal_orientation" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Crystallographic orientation of the substrate
+                    </doc>
+                </field>
+                <field name="flat_convention" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Flatness convention for the wafer edges.
+                    </doc>
+                </field>
+                <field name="doping" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Doping type and level of the substrate (e.g., p+, n, SI).
+                    </doc>
+                </field>
+                <field name="holder" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Type of substrate holder used during the process.
+                    </doc>
+                </field>
+                <field name="crystalline_structure" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Crystalline structure of the material.
+                        URI: https://w3id.org/pmd/co/CrystallineStructure
+                    </doc>
+                </field>
+            </group>
+
+            <group name="layer" type="NXsample_component" minOccurs="1" maxOccurs="unbounded">
+                <field name="name" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Name or identifier of the individual layer grown on the substrate
+                    </doc>
+                </field>
+                <field name="chemical_formula" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Chemical formula representing the layer material.
+                    </doc>
+                </field>
+                <field name="doping" type="NX_CHAR" minOccurs="0" recommended="true">
+                    <doc>
+                        Doping information for the layer.
+                    </doc>
+                </field>
+                <field name="thickness" type="NX_FLOAT" unit="NX_LENGTH" minOccurs="1">
+                    <doc>
+                        Thickness of the individual layer.
+                    </doc>
+                </field>
+                <field name="growth_temperature" type="NX_FLOAT" unit="NX_TEMPERATURE" minOccurs="1">
+                    <doc>
+                        Temperature during layer deposition.
+                    </doc>
+                </field>
+                <field name="growth_time" type="NX_FLOAT" unit="NX_TIME" minOccurs="1">
+                    <doc>
+                        Time duration for growing the layer.
+                    </doc>
+                </field>
+                <field name="growth_rate" type="NX_FLOAT" unit="NX_FREQUENCY" minOccurs="1">
+                    <doc>
+                        Growth rate of the layer, typically Å/s.
+                    </doc>
+                </field>
+                <field name="alloy_fraction" type="NX_FLOAT" unit="NX_UNITLESS" minOccurs="0" recommended="true">
+                    <doc>
+                        Alloy composition fraction for ternary/quaternary compounds.
+                    </doc>
+                </field>
+                <field name="rotational_frequency" type="NX_FLOAT" unit="NX_FREQUENCY" minOccurs="0" recommended="true">
+                    <doc>
+                        Rotation frequency of the sample holder during growth.
+                        URI: https://goldbook.iupac.org/terms/view/R05412
+                    </doc>
+                </field>
+                
+                <group name="cell" type="NXmaterial_source" minOccurs="1" maxOccurs="unbounded">
+                    <field name="name" type="NX_CHAR">
+                        <doc>
+                            Name for the material source device
+                        </doc>
+                    </field>
+                    <field name="model" type="NX_CHAR">
+                        <doc>
+                            Material source device identification code/model number
+                        </doc>
+                    </field>
+                    <field name="type" type="NX_CHAR">
+                        <doc>
+                            Type of material source device used for deposition.
+                        </doc>
+                        <enumeration>
+                            <item value="effusion_cell" />
+                            <item value="cracker_cell" />
+                            <item value="filament" />
+                        </enumeration>
+                    </field>
+                    <field name="shutter_status" type="NX_CHAR">
+                        <doc>
+                            Operational state of the shutter.
+                        </doc>
+                        <enumeration>
+                            <item value="open" />
+                            <item value="closed" />
+                        </enumeration>
+                    </field>
+                    <field name="partial_growth_rate" type="NX_FLOAT" unit="NX_FREQUENCY">
+                        <doc>
+                            Contribution of this material source to the overall growth rate, expressed in units of frequency (e.g., nm/s, Å/s).
+                        </doc>
+                    </field>
+                    <field name="partial_pressure" type="NX_FLOAT" unit="NX_PRESSURE">
+                        <doc>
+                            Partial pressure associated with this material source during the deposition process.
+                        </doc>
+                    </field>
+                </group>
+            </group>
+        </group>
+
+        <group name="instrument" type="NXinstrument" minOccurs="1">
+
+            <group name="chamber" type="NXenvironment" minOccurs="1">
+                <field name="name" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Apparatus identification code/model number.
+                    </doc>
+                </field>
+                <field name="type" type="NX_CHAR" minOccurs="1">
+                    <doc>
+                        Type of apparatus.
+                    </doc>
+                </field>
+                <field name="description" type="NX_CHAR" minOccurs="0" recommended="true">
+                    <doc>
+                        Description of the apparatus.
+                    </doc>
+                </field>
+                <field name="program" type="NX_CHAR" minOccurs="0" recommended="true">
+                    <doc>
+                        Program controlling the apparatus.
+                    </doc>
+                </field>
+
+                <group name="sensor" type="NXsensor" minOccurs="0" maxOccurs="unbounded" recommended="true">
+                    <field name="name" type="NX_CHAR" minOccurs="1">
+                        <doc>
+                            Name for the sensor.
+                        </doc>
+                    </field>
+                    <field name="model" type="NX_CHAR" minOccurs="1">
+                        <doc>
+                            Sensor identification code/model number.
+                        </doc>
+                    </field>
+                    <field name="measurement" type="NX_CHAR" minOccurs="1">
+                        <doc>
+                            Name of measured signal.
+                        </doc>
+                    </field>
+                    <field name="value" type="NX_FLOAT" unit="NX_ANY" minOccurs="0">
+                        <doc>
+                            Nominal setpoint or average value.
+                        </doc>
+                    </field>
+                </group>
+
+                <group name="cooling_device" type="NXcooling_device" minOccurs="1">
+                    <field name="name" type="NX_CHAR">
+                        <doc>
+                            Name for the cooling device.
+                        </doc>
+                    </field>
+                    <field name="model" type="NX_CHAR">
+                        <doc>
+                            Cooling device identification code/model number.
+                        </doc>
+                    </field>
+                    <field name="cooling_mode" type="NX_CHAR">
+                        <doc>
+                            Cooling medium or method employed to regulate the system's temperature.
+                        </doc>
+                        <enumeration>
+                            <item value="liquid_nitrogen" />
+                            <item value="gaseous_nitrogen" />
+                            <item value="water" />
+                            <item value="air" />
+                            <item value="other" />
+                            <item value="off" />
+                        </enumeration>
+                    </field>
+                    <field name="temperature" type="NX_FLOAT" unit="NX_TEMPERATURE">
+                        <doc>
+                            Target or nominal operating temperature of the cooling system.
+                        </doc>
+                    </field>
+                </group>
+            </group>              
+        </group>
+    </group>
+</definition>

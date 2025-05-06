@@ -1,0 +1,72 @@
+SystemLabel      zgnr
+
+NumberOfAtoms    10
+
+NumberOfSpecies  2
+%block ChemicalSpeciesLabel
+    1    6  C.gga
+    2    1  H.gga
+%endblock ChemicalSpeciesLabel
+
+LatticeConstant 1.0 Ang
+%block LatticeVectors
+   2.4850000000    0.0000000000    0.0000000000
+   0.0000000000   30.0000000000    0.0000000000
+   0.0000000000    0.0000000000   25.0000000000
+%endblock LatticeVectors
+
+AtomicCoordinatesFormat NotScaledCartesianAng
+%block AtomicCoordinatesAndAtomicSpecies
+    0.01066181   15.33036796   12.500   2       1  H
+    2.49566553   14.21630533   12.500   1       2  C
+    1.25317546   13.52621420   12.500   1       3  C
+    1.25327404   12.07056695   12.500   1       4  C
+    0.01081318   11.35816903   12.500   1       5  C
+    2.49598561    9.91120682   12.500   1       6  C
+    1.25353112    9.19879105   12.500   1       7  C
+    1.25364240    7.74312157   12.500   1       8  C
+    0.01116860    7.05301058   12.500   1       9  C
+    0.01135601    5.93891594   12.500   2      10  H
+%endblock AtomicCoordinatesAndAtomicSpecies
+
+XC.Functional          GGA
+XC.Authors             PBEsol
+SpinPolarized          .true.
+
+DM.MixingWeight        0.300     # New DM amount for next SCF cycle
+DM.NumberPulay         4
+DM.Tolerance           5.0d-5
+
+DM.UseSaveDM         .true.
+
+%block kgrid_Monkhorst_Pack
+20  0  0    0.0
+  0  1  0    0.0
+  0  0  1    0.0
+%endblock kgrid_Monkhorst_Pack
+
+%block DM.InitSpin
+   1    +
+   8    -
+%endblock DM.InitSpin
+
+WriteKbands    .true.
+WriteBands    .true.
+BandLinesScale     ReciprocalLatticeVectors
+
+%block Bandlines
+  1   0.0000000000   0.000000000   0.0000   \Gamma
+100   0.5000000000   0.000000000   0.0000   X
+%endblock Bandlines
+
+WriteCoorInitial  .true.
+WriteCoorStep     .true.
+AtomCoorFormatOut  Ang
+
+# --- Uncomment this to plot PDOS  ---
+# COOP.Write   .true.
+
+# --- Uncomment these to plot fatbands ---
+# WFS.Write.For.Bands   .true.
+# WFS.band.min  10
+# WFS.band.max  22

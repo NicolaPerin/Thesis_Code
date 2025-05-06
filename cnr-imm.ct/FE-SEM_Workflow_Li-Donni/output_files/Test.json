@@ -1,0 +1,44 @@
+{
+    "experiment": {
+        "experiment_id": "IMM-SEM-20250430",
+        "title": "SEM Test File",
+        "date": "2025-04-30",
+        "start_time": "14:55:00",
+        "end_time": "15:55:00",
+        "operator": {
+            "name": "Name Surname",
+            "email": "name@email.it",
+            "affiliation": "Affiliation",
+            "address": "Address"
+        },
+        "instrument": {
+            "name": "IMM-CT_SEM/EDX",
+            "model": "Zeiss FE-SEM Supra 35",
+            "vendor": "Carl Zeiss",
+            "manufacturer": "Carl Zeiss Microscopy GmbH",
+            "detector": "In-lens",
+            "software": {
+                "program": "SmartSEM",
+                "version": "V0.5.02.05 11_july_2007"
+            },
+            "source": {
+                "emitter_type": "Field Emission",
+                "emitter_material": "ZrO/W",
+                "probe": "electron"
+            }
+        }
+    },
+    "sample": {
+        "experiment_id": "IMM-SEM-20250430",
+        "identifier": "IMM-SEM-TEST-20250430",
+        "identifier_parent": "IMM-PARENT-001",
+        "name": "Test",
+        "atom_types": "H, O, C",
+        "date": "2025-04-30",
+        "description": "A test sample",
+        "origin": "Lab",
+        "analysis_type": "SEM Imaging",
+        "preparation": "Some powder",
+        "state": "solid"
+    }
+}

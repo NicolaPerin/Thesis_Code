@@ -1,0 +1,15 @@
+[
+    {
+        "experiment_id": "IMM-SEM-20250430",
+        "identifier": "IMM-SEM-TEST-20250430",
+        "identifier_parent": "IMM-PARENT-001",
+        "name": "Test",
+        "atom_types": "H, O, C",
+        "date": "2025-04-30",
+        "description": "A test sample",
+        "origin": "Lab",
+        "analysis_type": "SEM Imaging",
+        "preparation": "Some powder",
+        "state": "solid"
+    }
+]

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="nxdlformat.xsl" ?>
+
+<definition xmlns="http://definition.nexusformat.org/nxdl/3.1" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://definition.nexusformat.org/nxdl/3.1 ../nxdl.xsd"
+    category="base"
+	name="NXcooling_device" 
+	type="group" 
+    extends="NXobject">
+    <doc>
+        Base class defining a generic cooling device used in synthesis or deposition apparatuses. 
+		It captures key information such as the device name, model, cooling method, and nominal operating temperature. 
+		This class is intended to support a wide range of experimental setups requiring controlled thermal environments.
+    </doc>
+
+	<field name="name" type="NX_CHAR">
+		<doc>
+            Name for the cooling device.
+        </doc>
+	</field>
+	<field name="model" type="NX_CHAR">
+		<doc>
+            Cooling device identification code/model number.
+        </doc>
+	</field>
+    <field name="cooling_mode" type="NX_CHAR">
+        <doc>
+            Cooling medium or method employed to regulate the system's temperature.
+        </doc>
+		<enumeration>
+			<item value="liquid_nitrogen" />
+			<item value="gaseous_nitrogen" />
+			<item value="water" />
+			<item value="air" />
+			<item value="other" />
+			<item value="off" />
+		</enumeration>
+	</field>
+    <field name="temperature" type="NX_FLOAT" unit="NX_TEMPERATURE">
+		<doc>
+			Target or nominal operating temperature of the cooling system.
+		</doc>
+	</field>
+
+</definition>
