@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: lame-fair
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name lame-fair.dev.rt.areasciencepark.it;
+    
+        # Serve static files
+        location /static/ {
+            alias /app/staticfiles/;
+        }
+    
+        # Proxy all other requests to Django
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }

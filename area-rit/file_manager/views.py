@@ -5,16 +5,41 @@ import time
 import json
 import traceback
 import base64
+import zipfile
+import logging
+import boto3
 import numpy as np
 from PIL import Image
 from django.utils import timezone
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 from django.http import FileResponse, JsonResponse, HttpResponse
+from django.contrib.auth.decorators import login_required
+from botocore.exceptions import NoCredentialsError, ClientError
 from .nexus_integration import build_nexus_from_tiff_TEM_ED
 
 METADATA_DIR = os.path.join(settings.BASE_DIR, "file_manager", "data")
-LOCAL_STORAGE_DIR = os.path.join(settings.BASE_DIR, "local_storage")
+
+logger = logging.getLogger(__name__)
+
+def my_logout_view(request):
+    # 1. Log out locally
+    logout(request)
+    logger.debug("Local Django session ended for user %s", request.user)
+
+    # 2. Construct the end-session URL dynamically
+    id_token = request.session.get('oidc_id_token', '')
+
+    end_session_url = (
+        f"{settings.OIDC_OP_LOGOUT_ENDPOINT}"
+        f"?id_token_hint={id_token}"
+        f"&post_logout_redirect_uri={settings.OIDC_LOGOUT_REDIRECT_URL}"
+    )
+    
+    logger.debug("Redirecting user to Authentik end-session endpoint: %s", end_session_url)
+
+    return redirect(end_session_url)
 
 # ============================
 # Debug Helper Function
@@ -45,6 +70,7 @@ def print_hdf5_structure_with_values(file_path, max_preview_elements=10, small_d
 # ============================
 # View Functions
 # ============================
+@login_required
 def homepage_view(request):
     return render(request, 'file_manager/homepage.html')
 
@@ -54,6 +80,7 @@ def load_metadata_schema(schema_filename):
         schema = json.load(f)
     return schema
 
+@login_required
 def new_experiment_view(request):
     if request.method == 'POST':
         # Get fields from the form
@@ -113,15 +140,34 @@ def new_experiment_view(request):
                 out_nxs=nexus_file_tmp,
                 extra_fields=extra_fields,
             )
-            destination_path = os.path.join(LOCAL_STORAGE_DIR, unique_filename)
-            os.rename(nexus_file_tmp, destination_path)
-            print("File saved to local storage:", destination_path)
+
+            s3_client = boto3.client(
+                "s3",
+                endpoint_url=settings.AWS_S3_ENDPOINT_URL,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            )
+            with open(nexus_file_tmp, "rb") as nexus_file:
+                s3_client.upload_fileobj(
+                    nexus_file,
+                    settings.AWS_STORAGE_BUCKET_NAME,
+                    unique_filename
+                )
+
+            print("NeXus file uploaded to MinIO:", unique_filename)
+
+        except NoCredentialsError:
+            return JsonResponse({"status": "error", "message": "MinIO credentials not found."}, status=500)
+        except ClientError as e:
+            return JsonResponse({"status": "error", "message": f"MinIO error: {str(e)}"}, status=500)
         except Exception as e:
             print(traceback.format_exc())
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
         finally:
-            if os.path.exists(tiff_path):
-                os.remove(tiff_path)
+            # cleanup both temp files
+            for p in (tiff_path, nexus_file_tmp):
+                if os.path.exists(p):
+                    os.remove(p)
 
         return render(request, 'file_manager/upload_success.html', {'filename': unique_filename})
 
@@ -133,146 +179,177 @@ def new_experiment_view(request):
         today = timezone.now().date().isoformat()
         return render(request, 'file_manager/new_experiment.html', {
             'schema_files': schema_files,
+            'materials': materials,
             'experiment_types': experiment_types,
             'current_year': timezone.now().year,
             'default_date': today,
             'default_location': "Trieste",
         })
 
+@login_required
 def list_files_view(request):
+    """
+    Fetch a list of files stored in MinIO.
+    """
     try:
-        files = [f for f in os.listdir(LOCAL_STORAGE_DIR) if f != ".gitkeep"]
-    except FileNotFoundError:
-        return HttpResponse("Local storage directory not found.", status=500)
+        s3_client = boto3.client(
+            "s3",
+            endpoint_url=settings.AWS_S3_ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
 
-    return render(request, 'file_manager/file_list.html', {'files': files})
+        objects = s3_client.list_objects_v2(Bucket=settings.AWS_STORAGE_BUCKET_NAME)
 
+        files = [obj["Key"] for obj in objects.get("Contents", [])]
+
+        return render(request, "file_manager/file_list.html", {"files": files})
+
+    except NoCredentialsError:
+        return HttpResponse("Missing MinIO credentials.", status=500)
+
+    except ClientError as e:
+        return HttpResponse(f"MinIO error: {str(e)}", status=500)
+
+@login_required
 def view_file_view(request, file_name):
-    file_path = os.path.join(LOCAL_STORAGE_DIR, file_name)
-
-    if not os.path.exists(file_path):
-        return HttpResponse(f"File '{file_name}' not found.", status=404)
-
+    """
+    Fetch a NeXus file from MinIO, extract images, and display them.
+    """
     try:
-        print("HDF5 file structure with values:")
-        print_hdf5_structure_with_values(file_path)
+        # Create a MinIO client and fetch the file
+        s3_client = boto3.client(
+            "s3",
+            endpoint_url=settings.AWS_S3_ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+        file_obj = s3_client.get_object(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=file_name
+        )
+        file_content = file_obj["Body"].read()
 
-        with open(file_path, "rb") as f:
-            with h5py.File(f, "r") as h5_file:
+        # Open the HDF5 in-memory and process with Nexus logic
+        with h5py.File(io.BytesIO(file_content), "r") as h5_file:
+            # dump structure via the helper (using a real path)
+            tmp_path = f"/tmp/{file_name}"
+            with open(tmp_path, "wb") as tmp:
+                tmp.write(file_content)
+            print_hdf5_structure_with_values(tmp_path)
+            os.remove(tmp_path)
 
-                image_data_list = []
-                try:
-                    # Access the dataset via chained indexing.
-                    nxentry = h5_file["NXentry"]
-                    image_2d = nxentry["image_2d"]
-                    data_ds = image_2d["data"]
+            image_data_list = []
+            try:
+                nxentry    = h5_file["NXentry"]
+                image_2d   = nxentry["image_2d"]
+                data_ds    = image_2d["data"]
+                image_array = data_ds[()]
 
-                    # Retrieve the raw NumPy array.
-                    image_array = data_ds[()]
-
-                    # Normalize / convert the image data for display:
-                    if np.issubdtype(image_array.dtype, np.floating):
-                        # Use a percentile-based normalization for contrast enhancement.
-                        low, high = np.percentile(image_array, (2, 98))
-                        print("Percentiles for contrast stretch:", low, high)
-                        if high - low > 0:
-                            # Clip and scale the array to the full 0-255 range.
-                            image_array = np.clip(image_array, low, high)
-                            image_array = (image_array - low) / (high - low) * 255.0
-                        else:
-                            image_array = np.zeros_like(image_array)
-                        image_array = image_array.astype(np.uint8)
-                    elif image_array.dtype == np.uint16:
-                        # A simple 16-bit to 8-bit conversion.
-                        image_array = (image_array / 256).astype(np.uint8)
+                # normalize for display
+                if np.issubdtype(image_array.dtype, np.floating):
+                    low, high = np.percentile(image_array, (2, 98))
+                    if high > low:
+                        image_array = np.clip(image_array, low, high)
+                        image_array = (image_array - low) / (high - low) * 255.0
                     else:
-                        # For any other type, perform a basic normalization.
-                        image_array = image_array - image_array.min()
-                        if image_array.max() > 0:
-                            image_array = (image_array / image_array.max() * 255).astype(np.uint8)
+                        image_array = np.zeros_like(image_array)
+                    image_array = image_array.astype(np.uint8)
+                elif image_array.dtype == np.uint16:
+                    image_array = (image_array / 256).astype(np.uint8)
+                else:
+                    image_array = image_array - image_array.min()
+                    if image_array.max() > 0:
+                        image_array = (image_array / image_array.max() * 255).astype(np.uint8)
 
-                    # Create a PIL Image from the normalized array.
-                    image = Image.fromarray(image_array)
-                    
-                    # Save the image as PNG in an in-memory buffer.
-                    buffer = io.BytesIO()
-                    image.save(buffer, format="PNG")
-                    buffer.seek(0)
-                    
-                    # Encode the PNG image as Base64 to embed in HTML.
-                    image_b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                    image_data_list.append(image_b64)
-                except Exception as e:
-                    print("Error while accessing or converting NXentry/image_2d/data:", e)
-                    image_data_list = []
+                # turn into PNG + base64
+                image = Image.fromarray(image_array)
+                buffer = io.BytesIO()
+                image.save(buffer, format="PNG")
+                buffer.seek(0)
+                image_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                image_data_list.append(image_b64)
 
-        return render(request, 'file_manager/view_file.html', {
-            'file_name': file_name,
-            'image_data_list': image_data_list,
-        })
+            except Exception as e:
+                print("Error processing HDF5:", e)
+                image_data_list = []
+
+        return render(
+            request,
+            "file_manager/view_file.html",
+            {"file_name": file_name, "image_data_list": image_data_list}
+        )
+
+    except NoCredentialsError:
+        return HttpResponse("Missing MinIO credentials.", status=500)
+
+    except ClientError as e:
+        return HttpResponse(f"MinIO error: {str(e)}", status=500)
 
     except KeyError as e:
         return HttpResponse(f"KeyError: {e}", status=500)
+
     except Exception as e:
         return HttpResponse(f"An unexpected error occurred: {e}", status=500)
 
+@login_required
 def download_file_view(request, file_name):
-    file_path = os.path.join(LOCAL_STORAGE_DIR, file_name)
-
-    if not os.path.exists(file_path):
-        return HttpResponse(f"File '{file_name}' not found.", status=404)
-
+    """
+    Download a file from MinIO. If ?image=true, extract the single NXentry/image_2d/data
+    as a PNG (new-branch logic). Otherwise, stream the raw file bytes.
+    """
     try:
-        with open(file_path, "rb") as f:
-            file_data = f.read()
+        # — MinIO client & fetch (old branch) —
+        s3_client = boto3.client(
+            "s3",
+            endpoint_url=settings.AWS_S3_ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
+        file_obj     = s3_client.get_object(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=file_name
+        )
+        file_content = file_obj["Body"].read()
 
+        # — new-branch image extraction —
         if request.GET.get("image") == "true":
-            with h5py.File(io.BytesIO(file_data), "r") as h5_file:
-                # Check for image data under NXentry/image_2d/data
-                if (
-                    "NXentry" in h5_file and
-                    "image_2d" in h5_file["NXentry"] and
-                    "data" in h5_file["NXentry"]["image_2d"]
-                ):
-                    data_ds = h5_file["NXentry"]["image_2d"]["data"]
-                    # Retrieve the raw NumPy array
+            with h5py.File(io.BytesIO(file_content), "r") as h5_file:
+                try:
+                    nxentry     = h5_file["NXentry"]
+                    image_2d    = nxentry["image_2d"]
+                    data_ds     = image_2d["data"]
                     image_array = data_ds[()]
 
-                    # Normalize / convert depending on data type.
+                    # normalize / convert to 8-bit
                     if np.issubdtype(image_array.dtype, np.floating):
-                        # Use percentile-based normalization for contrast enhancement.
                         low, high = np.percentile(image_array, (2, 98))
-                        if high - low > 0:
+                        if high > low:
                             image_array = np.clip(image_array, low, high)
                             image_array = (image_array - low) / (high - low) * 255.0
                         else:
                             image_array = np.zeros_like(image_array)
-                        image_array = image_array.astype(np.uint8)
                     elif image_array.dtype == np.uint16:
-                        # Convert 16-bit to 8-bit.
-                        image_array = (image_array / 256).astype(np.uint8)
-                    else:
-                        image_array = image_array.astype(np.uint8)
+                        image_array = image_array / 256
+                    # else assume already in 0–255 range
+                    image_array = image_array.astype(np.uint8)
 
-                    # Create a PIL Image from the array.
-                    image = Image.fromarray(image_array)
-                    
-                    # Save the PIL image to a PNG-format buffer.
-                    buffer = io.BytesIO()
-                    image.save(buffer, format="PNG")
-                    buffer.seek(0)
+                    # render to PNG in memory
+                    buf = io.BytesIO()
+                    Image.fromarray(image_array).save(buf, format="PNG")
+                    buf.seek(0)
+                    return FileResponse(buf, as_attachment=True, filename="extracted_image.png")
 
-                    return FileResponse(
-                        buffer,
-                        as_attachment=True,
-                        filename="extracted_image.png"
-                    )
-                else:
-                    return HttpResponse("No image data found in this Nexus file.", status=404)
+                except Exception:
+                    return HttpResponse("No NXentry/image_2d/data found.", status=404)
 
-        # If the GET parameter "image" is not "true", return the entire file.
-        return FileResponse(open(file_path, "rb"), as_attachment=True, filename=file_name)
+        # — raw download for all other cases —
+        return FileResponse(io.BytesIO(file_content), as_attachment=True, filename=file_name)
 
+    except NoCredentialsError:
+        return HttpResponse("Missing MinIO credentials.", status=500)
+    except ClientError as e:
+        return HttpResponse(f"MinIO error: {e}", status=500)
     except Exception as e:
         traceback.print_exc()
         return HttpResponse(f"An error occurred while processing the file: {e}", status=500)

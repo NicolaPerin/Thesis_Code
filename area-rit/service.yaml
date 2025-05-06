@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lame-fair-service
+  namespace: lame-fair
+spec:
+  selector:
+    app: lame-fair-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

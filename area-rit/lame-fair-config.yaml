@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lame-fair-config
+  namespace: lame-fair
+data:
+  # Django
+  DJANGO_DEBUG: "True"
+  DJANGO_ALLOWED_HOSTS: "lame-fair.dev.rt.areasciencepark.it,127.0.0.1,localhost"
+
+  # OIDC
+  OIDC_RP_CLIENT_ID: "E7hFWO56FOXx2pQgKqSVnABKYKiahVC2MNqveLkm"
+  OIDC_RP_SCOPES: "openid email profile"
+  OIDC_RP_SIGN_ALGO: "RS256"
+  OIDC_VERIFY_SSL: "True"
+  OIDC_OP_AUTHORIZATION_ENDPOINT: "https://auth.k3s.virtualorfeo.it/application/o/authorize/"
+  OIDC_OP_TOKEN_ENDPOINT: "https://auth.k3s.virtualorfeo.it/application/o/token/"
+  OIDC_OP_USER_ENDPOINT: "https://auth.k3s.virtualorfeo.it/application/o/userinfo/"
+  OIDC_OP_JWKS_ENDPOINT: "https://auth.k3s.virtualorfeo.it/application/o/lame-fair/jwks/"
+  #OIDC_OP_JWKS_ENDPOINT: "https://auth.k3s.virtualorfeo.it/application/o/lame-fair/.well-known/jwks.json"
+  OIDC_LOGIN_URL: "/oidc/login/"
+  # Important: Use HTTPS for the callback
+  OIDC_LOGIN_REDIRECT_URL: "https://lame-fair.dev.rt.areasciencepark.it/oidc/callback/"
+  OIDC_OP_LOGOUT_ENDPOINT: "https://auth.k3s.virtualorfeo.it/application/o/lame-fair/end-session/"
+  OIDC_LOGOUT_REDIRECT_URL: "https://lame-fair.dev.rt.areasciencepark.it"
+  OIDC_RP_INITIATED_LOGOUT: "True"
+  OIDC_REQUESTS_VERIFY_CERT_PATH: "/usr/local/share/ca-certificates/freeipa-lame.crt"
+
+  # MinIO / S3
+  MINIO_ENDPOINT_URL: "https://s3.k3s.virtualorfeo.it"
+  MINIO_ACCESS_KEY: "lame-app-user"
+  MINIO_BUCKET_NAME: "lame-bucket"
+  AWS_S3_USE_SSL: "True"
+  AWS_S3_VERIFY: "True"
+
+  # Django DB
+  DJANGO_DB_NAME: "db.sqlite3"

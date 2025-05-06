@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lame-fair-ingress
+  namespace: lame-fair
+  annotations:
+    cert-manager.io/cluster-issuer: "ipa"
+    nginx.ingress.kubernetes.io/proxy-body-size: 1024m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: lame-fair.dev.rt.areasciencepark.it
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lame-fair-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - lame-fair.dev.rt.areasciencepark.it
+      secretName: lame-fair-cert

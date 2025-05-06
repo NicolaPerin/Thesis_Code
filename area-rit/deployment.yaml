@@ -1,0 +1,291 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lame-fair-app
+  namespace: lame-fair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lame-fair-app
+  template:
+    metadata:
+      labels:
+        app: lame-fair-app
+    spec:
+      imagePullSecrets:
+        - name: gitlab-regcred
+      volumes:
+        - name: staticfiles
+          emptyDir: {}
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+      initContainers:
+        - name: collectstatic
+          image: registry.gitlab.com/area7/nffa-di/lame_fair_by_design:test
+          command: ["python", "manage.py", "collectstatic", "--noinput"]
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lame-fair-secrets
+                  key: DJANGO_SECRET_KEY
+            - name: OIDC_RP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lame-fair-secrets
+                  key: OIDC_RP_CLIENT_SECRET
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lame-fair-secrets
+                  key: MINIO_SECRET_KEY
+            - name: DJANGO_DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: DJANGO_DEBUG
+            - name: DJANGO_ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: DJANGO_ALLOWED_HOSTS
+            - name: OIDC_RP_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_CLIENT_ID
+            - name: OIDC_RP_SCOPES
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_SCOPES
+            - name: OIDC_RP_SIGN_ALGO
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_SIGN_ALGO
+            - name: OIDC_VERIFY_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_VERIFY_SSL
+            - name: OIDC_OP_AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_AUTHORIZATION_ENDPOINT
+            - name: OIDC_OP_TOKEN_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_TOKEN_ENDPOINT
+            - name: OIDC_OP_USER_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_USER_ENDPOINT
+            - name: OIDC_OP_JWKS_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_JWKS_ENDPOINT
+            - name: OIDC_LOGIN_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_LOGIN_URL
+            - name: OIDC_LOGIN_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_LOGIN_REDIRECT_URL
+            - name: OIDC_OP_LOGOUT_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_LOGOUT_ENDPOINT
+            - name: OIDC_LOGOUT_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_LOGOUT_REDIRECT_URL
+            - name: OIDC_RP_INITIATED_LOGOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_INITIATED_LOGOUT
+            - name: MINIO_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: MINIO_ENDPOINT_URL
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: MINIO_BUCKET_NAME
+            - name: AWS_S3_USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: AWS_S3_USE_SSL
+            - name: AWS_S3_VERIFY
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: AWS_S3_VERIFY
+            - name: DJANGO_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: DJANGO_DB_NAME
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
+      containers:
+        - name: django
+          image: registry.gitlab.com/area7/nffa-di/lame_fair_by_design:test
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lame-fair-secrets
+                  key: DJANGO_SECRET_KEY
+            - name: OIDC_RP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: lame-fair-secrets
+                  key: OIDC_RP_CLIENT_SECRET
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lame-fair-secrets
+                  key: MINIO_SECRET_KEY
+            - name: DJANGO_DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: DJANGO_DEBUG
+            - name: DJANGO_ALLOWED_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: DJANGO_ALLOWED_HOSTS
+            - name: OIDC_RP_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_CLIENT_ID
+            - name: OIDC_RP_SCOPES
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_SCOPES
+            - name: OIDC_RP_SIGN_ALGO
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_SIGN_ALGO
+            - name: OIDC_VERIFY_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_VERIFY_SSL
+            - name: OIDC_OP_AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_AUTHORIZATION_ENDPOINT
+            - name: OIDC_OP_TOKEN_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_TOKEN_ENDPOINT
+            - name: OIDC_OP_USER_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_USER_ENDPOINT
+            - name: OIDC_OP_JWKS_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_JWKS_ENDPOINT
+            - name: OIDC_LOGIN_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_LOGIN_URL
+            - name: OIDC_LOGIN_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_LOGIN_REDIRECT_URL
+            - name: OIDC_OP_LOGOUT_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_OP_LOGOUT_ENDPOINT
+            - name: OIDC_LOGOUT_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_LOGOUT_REDIRECT_URL
+            - name: OIDC_RP_INITIATED_LOGOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: OIDC_RP_INITIATED_LOGOUT
+            - name: MINIO_ENDPOINT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: MINIO_ENDPOINT_URL
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: MINIO_BUCKET_NAME
+            - name: AWS_S3_USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: AWS_S3_USE_SSL
+            - name: AWS_S3_VERIFY
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: AWS_S3_VERIFY
+            - name: DJANGO_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: lame-fair-config
+                  key: DJANGO_DB_NAME
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d

@@ -7,4 +7,6 @@ file_manager/utils/__pycache__/
 minio_app/__pycache__/
 local_storage/*
 !local_storage/.gitkeep
+lame-fair-secrets.yaml
+certs/
 .env

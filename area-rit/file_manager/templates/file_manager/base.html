@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}LAME Data Management App{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>LAME Data Management App</h1>
+    </header>
+
+    <nav>
+        <ul>
+            {% if user.is_authenticated %}
+              <li>
+                <form method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="button">Logout</button>
+                </form>                
+              </li>
+            {% else %}
+              <li><a href="{% url 'oidc_login' %}">Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} LAME Data Management App</p>
+    </footer>
+</body>
+</html>
