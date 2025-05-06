@@ -9,8 +9,6 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 2. [Installation](#installation)
 3. [Usage](#usage)
 4. [Project Structure](#project-structure)
-5. [Contributing](#contributing)
-6. [License](#license)
 
 ---
 
