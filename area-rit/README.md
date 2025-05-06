@@ -52,6 +52,7 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 
 3. **Create a new experiment**:
    - Navigate to “Create New Experiment” and fill out the required details.
+   - You can find a pair of images in the example_images folder
    - The NeXus file will be created in /tmp then moved to your local storage folder (local_storage).
 
 4. **View stored files**:
