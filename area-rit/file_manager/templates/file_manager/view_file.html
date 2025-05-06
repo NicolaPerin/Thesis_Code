@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View files</title>
+    <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Viewing {{ file_name }}</h1>
+    </header>
+    <main>
+        <div class="button-row">
+            <a href="{% url 'file_list' %}">
+                <button class="back-button ">Back to File List</button>
+            </a>
+        </div>
+
+        {% if image_data_list and image_data_list|length > 0 %}
+            <h2>Image Preview:</h2>
+            {% for image_b64 in image_data_list %}
+                <img src="data:image/png;base64,{{ image_b64 }}" alt="Image Preview">
+            {% endfor %}
+        {% else %}
+            <p>No image data found.</p>
+        {% endif %}
+
+        <div class="button-row">
+            <a href="{% url 'download_file' file_name=file_name %}">
+                <button class="button ">Download File</button>
+            </a>
+            <a href="{% url 'download_file' file_name=file_name %}?image=true">
+                <button class="button ">Download Image</button>
+            </a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; {{ current_year }} LAME Data Management App</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Metadata</title>
+    <script>
+        function createCollapsibleTree(data, parentPath = "") {
+            const container = document.createElement("div");
+            container.className = "collapsible-container";
+
+            for (const key in data) {
+                const path = parentPath ? `${parentPath}.${key}` : key;
+
+                const item = document.createElement("div");
+                item.className = "collapsible-item";
+
+                const label = document.createElement("label");
+                label.innerHTML = key;
+
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = data[key];
+                input.dataset.node = path;
+
+                if (typeof data[key] === "object" && data[key] !== null) {
+                    input.style.display = "none"; // Hide input for objects
+                    const toggleButton = document.createElement("button");
+                    toggleButton.innerHTML = "Toggle";
+                    toggleButton.onclick = () => {
+                        childContainer.style.display =
+                            childContainer.style.display === "none" ? "block" : "none";
+                    };
+
+                    const childContainer = createCollapsibleTree(data[key], path);
+                    childContainer.style.display = "none";
+
+                    item.appendChild(toggleButton);
+                    item.appendChild(label);
+                    item.appendChild(childContainer);
+                } else {
+                    item.appendChild(label);
+                    item.appendChild(input);
+                }
+
+                container.appendChild(item);
+            }
+            return container;
+        }
+
+        function saveMetadata() {
+            const metadata = JSON.stringify(buildJsonFromForm(), null, 4);
+            const fileName = document.querySelector("input[name='file_name']").value;
+            const overwrite = document.querySelector("select[name='overwrite']").value;
+
+            fetch("{% url 'save_metadata' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ metadata: metadata, file_name: fileName, overwrite: overwrite })
+            }).then(response => response.json()).then(data => {
+                alert(data.message);
+            }).catch(error => {
+                console.error("Error:", error);
+            });
+        }
+
+        function buildJsonFromForm() {
+            const formElements = document.querySelectorAll("[data-node]");
+            let json = {};
+            formElements.forEach(el => {
+                const path = el.dataset.node.split(".");
+                let current = json;
+                for (let i = 0; i < path.length - 1; i++) {
+                    if (!current[path[i]]) {
+                        current[path[i]] = {};
+                    }
+                    current = current[path[i]];
+                }
+                current[path[path.length - 1]] = el.value;
+            });
+            return json;
+        }
+
+        // Render the collapsible tree
+        document.addEventListener("DOMContentLoaded", () => {
+            const metadata = {{ metadata|safe }};
+            const treeContainer = document.getElementById("metadata-tree");
+            const tree = createCollapsibleTree(metadata);
+            treeContainer.appendChild(tree);
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Edit Metadata</h1>
+    </header>
+    <main>
+        <div id="metadata-tree"></div>
+        <!-- Save form -->
+        <form id="metadata-form">
+            <input type="hidden" name="file_name" value="{{ file_name }}">
+            <div>
+                Overwrite existing file?
+                <select id="overwrite" name="overwrite">
+                    <option value="true">Yes</option>
+                    <option value="false" selected>No</option>
+                </select>
+            </div>
+            <button type="button" onclick="saveMetadata()">Save Metadata</button>
+        </form>
+        <a href="{% url 'list_metadata_files' %}">
+            <button type="button">Back to File List</button>
+        </a>
+    </main>
+    <footer>
+        <p>&copy; {{ current_year }} LAME Data Management App</p>
+    </footer>
+</body>
+</html>

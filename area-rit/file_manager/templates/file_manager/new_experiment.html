@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create New Experiment</title>
+  <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+  <style>
+    /* --- layout helpers ------------------------------------------------ */
+    form p            { margin-bottom: 1em; }
+    input, textarea,
+    select            { width: 100%; padding: 0.5em; }
+    button            { padding: 1em 1em; }
+
+    /* put two widgets next to each other */
+    .form-row         { display: flex; gap: 1rem; margin-bottom: 1em; }
+    .form-row > p     { flex: 1; margin: 0; }
+    .form-row label   { display: block; margin-bottom: .3em; }
+
+    /* fancy file‑chooser button */
+    #tiff_files       { display:none; }
+    .custom-file-btn  { display:inline-block; background:#0066cc; color:#fff;
+                        padding:.5em 1em; border-radius:.3em; cursor:pointer; }
+    .custom-file-btn:hover { background:#004999; }
+  </style>
+</head>
+<body>
+  <header><h1>Create New Experiment</h1></header>
+  <main class="form-container">
+    <p>Fill out the metadata and upload your TIFF image(s).<br>
+       Required NeXus fields coming <em>from the form</em> are marked with <strong>*</strong>.</p>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- ------------------ experiment scope ------------------------- -->
+      <p>
+        <label for="experiment_type">Experiment Type<span>*</span></label>
+        <select id="experiment_type" name="experiment_type" required>
+          <option value="" disabled selected>Select experiment type</option>
+          {% for experiment in experiment_types %}<option value="{{ experiment }}">{{ experiment }}</option>{% endfor %}
+        </select>
+      </p>
+      <p>
+        <label for="operator_name">Operator Name<span>*</span></label>
+        <input id="operator_name"  name="operator_name"  required>
+      </p>
+      <p>
+        <label for="description">Description<span>*</span></label>
+        <textarea id="description" name="description" rows="3" required></textarea>
+      </p>
+
+      <!-- ------------------ sample metadata -------------------------- -->
+      <div class="form-row">
+        <p>
+          <label for="material">Sample Material<span>*</span></label>
+          <input list="materials" id="material" name="material" required>
+          <datalist id="materials">
+            {% for m in materials %}
+              <option value="{{ m }}"></option>
+            {% endfor %}
+          </datalist>
+        </p>
+        <p>
+          <label for="sample_identifier">Sample Identifier<span>*</span></label>
+          <input type="text" id="sample_identifier" name="sample_identifier" required>
+        </p>
+      </div>      
+
+      <div class="form-row">
+        <p>
+          <label for="preparation_date">Preparation date:</label>
+          <input type="date" id="preparation_date" name="preparation_date"
+            value="{{ default_date }}" required>
+        </p>
+          
+        <p>
+          <label for="atom_types">Comma-separated atom symbols (e.g. Fe,Ni,Al):</label>
+          <input type="text"     id="atom_types"        name="atom_types" required>
+        </p>
+      </div>
+
+      <div class="form-row">
+        <p>
+          <label for="initial_composition">Initial Composition</label>
+          <input id="initial_composition" name="initial_composition">
+        </p>
+        <p>
+          <label for="final_composition">Final Composition</label>
+          <input id="final_composition" name="final_composition">
+        </p>
+      </div>
+      <p>
+        <label for="hypothetical_composition">Hypothetical Composition</label>
+        <input id="hypothetical_composition" name="hypothetical_composition">
+      </p>
+
+      <!-- ------------------ instrument metadata ---------------------- --> ---------------------- -->
+      <div class="form-row">
+        <p>
+          <label for="instrument_name">Instrument Name<span>*</span></label>
+          <input id="instrument_name" name="instrument_name" required>
+        </p>
+        <p>
+          <label for="instrument_location">Instrument Location</label>
+          <input type="text" id="instrument_location" name="instrument_location"
+            value="{{ default_location }}" required>
+        </p>
+      </div>
+
+      <!-- ------------------ file + mapping --------------------------- -->
+      <div class="form-row">
+        <p>
+          <label for="tiff_files" class="custom-file-btn">Select TIFF images<span>*</span></label>
+          <input type="file" id="tiff_files" name="image_files" accept="image/tiff,image/*" multiple required>
+        </p>
+        <p>
+          <label for="schema_file_name">Metadata Mapping<span>*</span></label>
+          <select id="schema_file_name" name="schema_file_name" required style="text-align:center; text-align-last:center;">
+            <option value="" disabled selected>Select mapping</option>
+            {% for schema_file in schema_files %}<option value="{{ schema_file }}">{{ schema_file }}</option>{% endfor %}
+          </select>
+        </p>
+      </div>
+
+      <!-- ------------------ action buttons --------------------------- -->
+      <div class="button-row">
+        <button type="submit" class="button">Create NeXus File</button>
+        <a href="{% url 'homepage' %}" class="button back-button">Back to Homepage</a>
+      </div>
+    </form>
+  </main>
+
+  <footer><p>&copy; {{ current_year }} LAME Data Management App</p></footer>
+
+  <script>
+    function toggleCustomMaterial() {
+      const drop = document.getElementById('material');
+      const custom = document.getElementById('custom_material');
+      if (drop.value === 'Other') {
+        custom.style.display = 'block';
+        custom.required = true;
+      } else {
+        custom.style.display = 'none';
+        custom.required = false;
+      }
+    }
+  </script>
+</body>
+</html>

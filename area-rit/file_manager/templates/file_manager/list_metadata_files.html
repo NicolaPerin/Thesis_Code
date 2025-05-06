@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Metadata Schema Editor</title>
+    <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Metadata Schema Editor!</h1>
+    </header>
+    <form method="GET" id="file-form">
+        <label for="file_name">Choose a file:</label>
+        <select id="file_name" name="file_name">
+            <option value="">-- Select a file --</option>
+            {% for file in files %}
+                <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="button">Load File</button>
+        <button type="button" id="delete-file-btn" class="button" style="display:none;">Delete File</button>
+        <button type="button" id="create-new-schema-btn" class="button">Create New Schema</button>
+    </form>
+
+    <div class="expand-collapse-container">
+        <button type="button" id="expand-all-btn" class="button">Expand All</button>
+        <button type="button" id="collapse-all-btn" class="button">Collapse All</button>
+    </div>
+
+    <!-- Display Metadata -->
+    <div id="metadata-tree"></div>
+
+    <!-- Save Section -->
+    <div class="save-section">
+        <h2 id="editing-file-title">
+            {% if selected_file %}
+            Editing: {{ selected_file }}
+            {% else %}
+            Saving New File
+            {% endif %}
+        </h2>
+        <div>
+            <label for="overwrite">Overwrite existing file?</label>
+            <select id="overwrite">
+                {% if selected_file %}
+                    <option value="true">Yes</option>
+                    <option value="false" selected>No</option>
+                {% else %}
+                    <option value="true">Yes</option>
+                    <option value="false" selected>No</option>
+                {% endif %}
+            </select>
+        </div>
+        <div id="new-file-name-container" style="display: none;">
+            <label for="new_file_name">New file name:</label>
+            <input type="text" id="new_file_name" placeholder="Enter new file name">
+        </div>
+
+        <button type="button" id="save-metadata-btn" class="button">Save Metadata</button>
+        <a 
+            href="{% url 'homepage' %}" class="button back-button">Back to Homepage
+        </a>
+    </div>
+
+    <script>
+        const csrfToken = "{{ csrf_token }}";
+        const selectedFile = "{{ selected_file|default_if_none:'' }}".trim();
+        const metadata = {{ metadata| safe }};
+    
+        const saveMetadataUrl = "{% url 'save_metadata' %}";
+        const deleteFileUrl = "{% url 'delete_file' %}";
+        const homepageUrl = "{% url 'homepage' %}";
+    </script>
+    <script src="{% static 'file_manager/js/schema_editor.js' %}"></script>    
+    <footer>
+        <p>&copy; {{ current_year }} LAME Data Management App</p>
+    </footer>
+</body>
+</html>

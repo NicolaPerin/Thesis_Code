@@ -1,0 +1,10 @@
+venv/
+file_manager/data/*
+!file_manager/data/.gitkeep
+file_manager/__pycache__/
+file_manager/migrations/__pycache__/
+file_manager/utils/__pycache__/
+minio_app/__pycache__/
+local_storage/*
+!local_storage/.gitkeep
+.env

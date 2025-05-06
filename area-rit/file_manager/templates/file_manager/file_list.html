@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Uploaded files</title>
+    <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+    <style>
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 0.5vh;
+            margin-bottom: 1vh;
+            padding: 1vh;
+            font-size: 2vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        li span.file-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        li a {
+            text-decoration: none;
+            margin-left: 1vh;
+            font-size: 2vh;
+            color: #0066cc;
+        }
+
+        li a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Uploaded files</h1>
+    </header>
+    <main>
+        <div class="button-row">
+            <a href="{% url 'homepage' %}">
+                <button class="back-button ">Back to Homepage</button>
+            </a>
+        </div>
+
+        <ul>
+            {% for file in files %}
+                <li>
+                    <span class="file-name">{{ file }}</span>
+                    <span>
+                        <a href="{% url 'view_file' file_name=file %}">View</a>
+                        <a href="{% url 'download_file' file_name=file %}">Download</a>
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </main>
+    <footer>
+        <p>&copy; {{ current_year }} LAME Data Management App</p>
+    </footer>
+</body>
+</html>

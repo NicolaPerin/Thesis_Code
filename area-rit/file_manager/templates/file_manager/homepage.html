@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LAME Data Management App</title>
+    <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>LAME Data Management App</h1>
+    </header>
+    <main>
+        <p>Welcome to the LAME Data Management App, your portal for managing Nexus files and metadata. You can upload new files, view previously uploaded files, or create a new experiment.</p>
+
+        <div class="button-row">
+            <a href="{% url 'new_experiment' %}">
+                <button class="button">Create New Experiment</button>
+            </a>
+            <a href="{% url 'file_list' %}">
+                <button class="button">View Uploaded Files</button>
+            </a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; {{ current_year }} LAME Data Management App</p>
+    </footer>
+</body>
+</html>

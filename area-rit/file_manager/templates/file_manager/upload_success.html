@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload successful!</title>
+    <link rel="stylesheet" href="{% static 'file_manager/css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Upload successful!</h1>
+    </header>
+    <main>
+        <p>Your Nexus file has been successfully created and uploaded.</p>
+        <p><strong>Filename:</strong> {{ filename }}</p>
+
+        <div class="button-row">
+            <a href="{% url 'new_experiment' %}">
+                <button class="button">Create Another Experiment</button>
+            </a>
+            <a href="{% url 'file_list' %}">
+                <button class="back-button">View Uploaded Files</button>
+            </a>
+            <a href="{% url 'homepage' %}">
+                <button class="back-button">Back to Homepage</button>
+            </a>
+        </div>
+    </main>
+</body>
+</html>
