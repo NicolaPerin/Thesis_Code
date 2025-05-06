@@ -74,8 +74,3 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
    ├─ requirements.txt      # Project dependencies
    ├─ manage.py             # Django management commands   
    └─ ...
-```
-   ```bash
-   git push -u origin feature/my-new-feature
-
-5. **Open a Merge Request to merge changes into main or another base branch**.
