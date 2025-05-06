@@ -23,7 +23,7 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 ## Installation
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Master-Data-Management-and-Curation/Thesis_Code.git
+   git clone https://github.com/NicolaPerin/Thesis_Code.git
 
 2. **Navigate to the project folder**:
    ```bash
