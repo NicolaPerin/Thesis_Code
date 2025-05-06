@@ -24,11 +24,11 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 ## Installation
 1. **Clone the repository**:
    ```bash
-   git clone https://gitlab.com/area7/nffa-di/lame_fair_by_design.git
+   git clone https://github.com/Master-Data-Management-and-Curation/Thesis_Code.git
 
 2. **Navigate to the project folder**:
    ```bash
-   cd lame_fair_by_design
+   cd Thesis_Code/area-rit
 
 3. **Create a virtual environment, activate it and install the required packages**:
    ```bash
@@ -45,22 +45,18 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 
 ## Usage
 
-1. **Run database migrations (if using Django’s database features)**:
-   ```bash
-   python manage.py migrate
-
-2. **Start the Django development server**:
+1. **Start the Django development server**:
    ```bash
    python manage.py runserver 8000
 
-3. **Access the application**:
+2. **Access the application**:
    - Open your web browser and go to http://127.0.0.1:8000/.
 
-4. **Create a new experiment**:
-   - Navigate to “Create New Experiment” and fill out the required details (HDR file, images, schema, etc.).
+3. **Create a new experiment**:
+   - Navigate to “Create New Experiment” and fill out the required details.
    - The NeXus file will be created in /tmp then moved to your local storage folder (local_storage).
 
-5. **View stored files**:
+4. **View stored files**:
    - Click on “View Uploaded Files” to see the list of NeXus files. You can then download or view embedded images directly.
 
 ---
@@ -81,22 +77,6 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
    ├─ manage.py             # Django management commands   
    └─ ...
 ```
----
-
-## Contributing
-
-1. **Fork the repository**
-
-2. **Create a new branch**
-   ```bash
-   git checkout -b feature/my-new-feature
-
-3. **Commit your changes**:
-   ```bash
-   git add .
-   git commit -m "Add some feature"
-
-4. **Push to the branch**:
    ```bash
    git push -u origin feature/my-new-feature
 
