@@ -8,7 +8,8 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 1. [Prerequisites](#prerequisites)
 2. [Installation](#installation)
 3. [Usage](#usage)
-4. [Project Structure](#project-structure)
+4. [Optional production deployment](#optional-production-deployment)
+5. [Project Structure](#project-structure)
 
 ---
 
@@ -57,6 +58,14 @@ LAME_FAIR_by_Design is a Django-based application that allows you to upload meta
 
 4. **View stored files**:
    - Click on “View Uploaded Files” to see the list of NeXus files. You can then download or view embedded images directly.
+
+---
+
+## Optional production deployment
+
+The `feature/virtualorfeo_integration` branch contains Kubernetes manifests and Helm charts to run this application in a production cluster.  
+**Note:** Reproducing that setup requires a Kubernetes environment and associated infrastructure, which may not be available to evaluators.  
+For a fully reproducible, local development environment, please continue to use the `main` branch (as documented above).
 
 ---
 
